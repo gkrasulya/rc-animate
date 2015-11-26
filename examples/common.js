@@ -1650,7 +1650,10 @@
 	 * @return {string} An escaped string.
 	 */
 	function escapeTextContentForBrowser(text) {
-	  return ('' + text).replace(ESCAPE_REGEX, escaper);
+	  // just return passed text for performance purposes
+	  // all text that needs escaping should be escaped manually
+	  return text;
+	  // return ('' + text).replace(ESCAPE_REGEX, escaper);
 	}
 	
 	module.exports = escapeTextContentForBrowser;
@@ -4437,12 +4440,11 @@
 	    var fakeNode = document.createElement('react');
 	    ReactErrorUtils.invokeGuardedCallback = function (name, func, a, b) {
 	      var boundFunc = func.bind(null, a, b);
-	      var evtType = 'react-' + name;
-	      fakeNode.addEventListener(evtType, boundFunc, false);
+	      fakeNode.addEventListener(name, boundFunc, false);
 	      var evt = document.createEvent('Event');
-	      evt.initEvent(evtType, false, false);
+	      evt.initEvent(name, false, false);
 	      fakeNode.dispatchEvent(evt);
-	      fakeNode.removeEventListener(evtType, boundFunc, false);
+	      fakeNode.removeEventListener(name, boundFunc, false);
 	    };
 	  }
 	}
@@ -5037,7 +5039,7 @@
 	var canDefineProperty = false;
 	if (process.env.NODE_ENV !== 'production') {
 	  try {
-	    Object.defineProperty({}, 'x', { get: function () {} });
+	    Object.defineProperty({}, 'x', {});
 	    canDefineProperty = true;
 	  } catch (x) {
 	    // IE will fail on defineProperty
@@ -5523,7 +5525,7 @@
 	   * @return {string} Markup string with checksum attribute attached
 	   */
 	  addChecksumToMarkup: function (markup) {
-	    var checksum = adler32(markup);
+	    var checksum = markup.length;
 	
 	    // Add checksum (handle both parent tags and self-closing tags)
 	    return markup.replace(TAG_END, ' ' + ReactMarkupChecksum.CHECKSUM_ATTR_NAME + '="' + checksum + '"$&');
@@ -5537,8 +5539,8 @@
 	  canReuseMarkup: function (markup, element) {
 	    var existingChecksum = element.getAttribute(ReactMarkupChecksum.CHECKSUM_ATTR_NAME);
 	    existingChecksum = existingChecksum && parseInt(existingChecksum, 10);
-	    var markupChecksum = adler32(markup);
-	    return markupChecksum === existingChecksum;
+	    var markupChecksum = markup.length;
+	    return markupChecksum === Number(existingChecksum);
 	  }
 	};
 	
@@ -10471,7 +10473,6 @@
 	    icon: null,
 	    id: MUST_USE_PROPERTY,
 	    inputMode: MUST_USE_ATTRIBUTE,
-	    integrity: null,
 	    is: MUST_USE_ATTRIBUTE,
 	    keyParams: MUST_USE_ATTRIBUTE,
 	    keyType: MUST_USE_ATTRIBUTE,
@@ -10831,7 +10832,6 @@
 	// For quickly matching children type, to test if can be treated as content.
 	var CONTENT_TYPES = { 'string': true, 'number': true };
 	
-	var CHILDREN = keyOf({ children: null });
 	var STYLE = keyOf({ style: null });
 	var HTML = keyOf({ __html: null });
 	
@@ -11322,9 +11322,7 @@
 	        }
 	        var markup = null;
 	        if (this._tag != null && isCustomComponent(this._tag, props)) {
-	          if (propKey !== CHILDREN) {
-	            markup = DOMPropertyOperations.createMarkupForCustomAttribute(propKey, propValue);
-	          }
+	          markup = DOMPropertyOperations.createMarkupForCustomAttribute(propKey, propValue);
 	        } else {
 	          markup = DOMPropertyOperations.createMarkupForProperty(propKey, propValue);
 	        }
@@ -11583,9 +11581,6 @@
 	      } else if (isCustomComponent(this._tag, nextProps)) {
 	        if (!node) {
 	          node = ReactMount.getNode(this._rootNodeID);
-	        }
-	        if (propKey === CHILDREN) {
-	          nextProp = null;
 	        }
 	        DOMPropertyOperations.setValueForAttribute(node, propKey, nextProp);
 	      } else if (DOMProperty.properties[propKey] || DOMProperty.isCustomAttribute(propKey)) {
@@ -16343,7 +16338,7 @@
 	        start: input.selectionStart,
 	        end: input.selectionEnd
 	      };
-	    } else if (document.selection && (input.nodeName && input.nodeName.toLowerCase() === 'input')) {
+	    } else if (document.selection && input.nodeName && input.nodeName.toLowerCase() === 'input') {
 	      // IE8 input.
 	      var range = document.selection.createRange();
 	      // There can only be one selection per document in IE, so it must
@@ -16378,7 +16373,7 @@
 	    if ('selectionStart' in input) {
 	      input.selectionStart = start;
 	      input.selectionEnd = Math.min(end, input.value.length);
-	    } else if (document.selection && (input.nodeName && input.nodeName.toLowerCase() === 'input')) {
+	    } else if (document.selection && input.nodeName && input.nodeName.toLowerCase() === 'input') {
 	      var range = input.createTextRange();
 	      range.collapse(true);
 	      range.moveStart('character', start);
@@ -18707,7 +18702,7 @@
 	
 	'use strict';
 	
-	module.exports = '0.14.2';
+	module.exports = '0.14.1';
 
 /***/ },
 /* 149 */
